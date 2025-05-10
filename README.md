@@ -10,6 +10,7 @@ and for [Hardware development](https://github.com/Mark1626/road-to-hardware-desi
     1.1 tdigest sqlite extension
 2. Tools of the Trade
 3. Data Structures (Because why not)
+    3.1 AVL Tree
 4. Experiments with Lakehouses
 
 ## Blogs
