@@ -7,12 +7,13 @@ and for [Hardware development](https://github.com/Mark1626/road-to-hardware-desi
 ## Chapters
 
 1. SQL Engines
-    1.1 tdigest sqlite extension
+    * tdigest sqlite extension
 2. Tools of the Trade
-    2.1 Lucene Experiments
+    *  Lucene Experiments
 3. Data Structures (Because why not)
-    3.1 AVL Tree
-4. Experiments with Lakehouses
+    *  AVL Tree
+4. Trino and Iceberg experiments
+    * Trino exploration
 
 ## TIL
 
