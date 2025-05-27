@@ -5,3 +5,7 @@
 index
 
 .idea
+target
+*.zip
+trino-recutil-475
+*.jar

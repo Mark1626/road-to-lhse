@@ -1,9 +1,11 @@
 services:
   trino:
-    image: trinodb/trino
+    image: trinodb/trino:475
     volumes:
       - ./etc/trino/catalog:/etc/trino/catalog:rw
       - warehouse:/tmp/warehouse
+      - ./trino-recutil-475:/usr/lib/trino/plugin/trino-recutil
+      - ./scratch:/scratch
     ports:
       - "8080:8080"
     links:
