@@ -13,9 +13,11 @@
  */
 package com.mark.jrecutil;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimaps;
+
 import java.util.Locale;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class RecutilRecordVisitor
         extends RecfileBaseVisitor<Optional<RecfileRecord>>
@@ -35,7 +37,7 @@ public class RecutilRecordVisitor
                     String fieldName = field.key().getText().toLowerCase(Locale.ENGLISH);
                     String fieldValue = field.value().getText();
                     return new RecfileField(fieldName, fieldValue);
-                }).collect(Collectors.toMap(RecfileField::key, element -> element));
+                }).collect(Multimaps.toMultimap(RecfileField::key, RecfileField::value, HashMultimap::create));
         return Optional.of(new RecfileRecord(fields));
     }
 }

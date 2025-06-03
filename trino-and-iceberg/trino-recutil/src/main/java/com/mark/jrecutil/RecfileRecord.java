@@ -13,13 +13,15 @@
  */
 package com.mark.jrecutil;
 
+import com.google.common.collect.Multimap;
+
+import java.util.Collection;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 
-public record RecfileRecord(Map<String, RecfileField> fields)
+public record RecfileRecord(Multimap<String, String> fields)
 {
-    public RecfileField getColumn(String columnName)
+    public Collection<String> getColumn(String columnName)
     {
         return fields.get(columnName.toLowerCase(Locale.ENGLISH));
     }
@@ -27,10 +29,5 @@ public record RecfileRecord(Map<String, RecfileField> fields)
     public Set<String> getKeys()
     {
         return fields.keySet();
-    }
-
-    public Integer getSize()
-    {
-        return fields.size();
     }
 }

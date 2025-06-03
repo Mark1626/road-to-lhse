@@ -14,9 +14,9 @@
 package com.mark.jrecutil;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class RecutilfileVisitor
         extends RecfileBaseVisitor<Recfile>
@@ -29,8 +29,12 @@ public class RecutilfileVisitor
         for (RecfileParser.LineContext line : ctx.line()) {
             line.accept(recutilRecordVisitor).ifPresent(records::add);
         }
-        var recfields = Collections.max(records, Comparator.comparingInt(RecfileRecord::getSize))
-                .getKeys();
+        var recfields = records
+                .stream()
+                .map(RecfileRecord::getKeys)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
+
         return new Recfile(records, recfields);
     }
 }

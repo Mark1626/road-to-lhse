@@ -25,7 +25,6 @@ import io.trino.spi.connector.InMemoryRecordSet;
 import io.trino.spi.connector.RecordSet;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
@@ -65,7 +64,7 @@ public class RecutilRecordSetProvider
                                     handle -> {
                                         var col = record.getColumn(handle.getColumnName());
                                         // TODO: This may not work everytime when types are introduced
-                                        return Objects.nonNull(col) ? col.value() : "";
+                                        return String.join(",", col);
                                     })
                             .toList()
                     ).toList();

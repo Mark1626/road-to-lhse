@@ -13,6 +13,8 @@
  */
 package com.mark.jrecutil;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.mark.RecutilClient;
 import com.mark.RecutilColumnHandle;
 import com.mark.RecutilConfig;
@@ -26,9 +28,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class TestRecutilRecordSetProvider
 {
@@ -51,20 +51,34 @@ public class TestRecutilRecordSetProvider
                 List.of(
                         new RecutilColumnHandle("name", VarcharType.VARCHAR, 0),
                         new RecutilColumnHandle("score", VarcharType.VARCHAR, 1),
-                        new RecutilColumnHandle("grade", VarcharType.VARCHAR, 2)));
+                        new RecutilColumnHandle("grade", VarcharType.VARCHAR, 2),
+                        new RecutilColumnHandle("tag", VarcharType.VARCHAR, 3)));
 
         var cursor = recordset.cursor();
         List<RecfileRecord> records = new ArrayList<>();
         while (cursor.advanceNextPosition()) {
-            Map<String, RecfileField> record = new HashMap<>();
-            record.put("name", new RecfileField("name", cursor.getSlice(0).toStringUtf8()));
-            record.put("score", new RecfileField("score", cursor.getSlice(1).toStringUtf8()));
-            record.put("grade", new RecfileField("grade", cursor.getSlice(2).toStringUtf8()));
+            Multimap<String, String> record = HashMultimap.create();
+            record.put("name", cursor.getSlice(0).toStringUtf8());
+            record.put("score", cursor.getSlice(1).toStringUtf8());
+            record.put("grade", cursor.getSlice(2).toStringUtf8());
+            record.put("tag", cursor.getSlice(3).toStringUtf8());
             records.add(new RecfileRecord(record));
         }
 
-        Assertions.assertEquals(records, List.of(
-                new RecfileRecord(Map.of("name", new RecfileField("name", "A"), "score", new RecfileField("score", "10"), "grade", new RecfileField("grade", ""))),
-                new RecfileRecord(Map.of("name", new RecfileField("name", "B"), "score", new RecfileField("score", "20"), "grade", new RecfileField("grade", "A")))));
+        Multimap<String, String> recordA = HashMultimap.create();
+        recordA.put("name", "A");
+        recordA.put("score", "10");
+        recordA.put("grade", "");
+        recordA.put("tag", "");
+
+        Multimap<String, String> recordB = HashMultimap.create();
+        recordB.put("name", "B");
+        recordB.put("score", "20");
+        recordB.put("grade", "A");
+        recordB.put("tag", "A,B");
+
+        Assertions.assertEquals(List.of(
+                new RecfileRecord(recordA),
+                new RecfileRecord(recordB)), records);
     }
 }
