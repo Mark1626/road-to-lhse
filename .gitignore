@@ -1,11 +1,13 @@
 *.dSYM
 *.o
+*.class
+*.zip
+*.jar
 
 .vscode
 index
 
 .idea
 target
-*.zip
 trino-recutil-475
-*.jar
+

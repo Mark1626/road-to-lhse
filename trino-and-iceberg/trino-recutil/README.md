@@ -32,3 +32,5 @@ rec.suffix=rec
 2. Support remote files
 3. Fix and use the ANTLR maven plugin
 4. Maybe make a custom cursor instead of an inmemory cursor
+5. When a field is repeated it should represented as a 1-Many relationship
+
