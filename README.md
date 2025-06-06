@@ -9,11 +9,15 @@ and for [Hardware development](https://github.com/Mark1626/road-to-hardware-desi
 1. SQL Engines
     * tdigest sqlite extension
 2. Tools of the Trade
-    *  Lucene Experiments
+    * Lucene Experiments
+    * ASM from Java
+    * Notes on JMH (case studies to be added)
+    * RKDB - Rust based KV store backed by sqlite
 3. Data Structures (Because why not)
     *  AVL Tree
 4. Trino and Iceberg experiments
     * Trino exploration
+    * Trino recfile connector plugin
 
 ## TIL
 
