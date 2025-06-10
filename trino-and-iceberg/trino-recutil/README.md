@@ -1,5 +1,7 @@
 # Trino recfile plugin
 
+A trino connector for recfiles, a human readable database. To learn more about recfiles see https://www.gnu.org/software/recutils/ and https://gist.github.com/gmolveau/6be062d9b9005cf985cda98dabdf0baa
+
 ## Building
 
 ### Building the plugin

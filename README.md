@@ -25,6 +25,10 @@ and for [Hardware development](https://github.com/Mark1626/road-to-hardware-desi
 
 ## Learning Material and References
 
+### References
+
+1. https://projectnessie.org/iceberg/trino/
+
 ### Videos
 
 1. [Iceberg Meetup Channels](https://www.youtube.com/@IcebergMeetup)
@@ -32,7 +36,8 @@ and for [Hardware development](https://github.com/Mark1626/road-to-hardware-desi
 3. [Apache Iceberg Deep Dive | Part 1 by Garage Education](https://www.youtube.com/watch?v=X-xU6OZfZok)
 4. [Apache Iceberg Deep Dive | Part 2 by Garage Education](https://www.youtube.com/watch?v=lwRzZOLFPjA)
 
-## Blogs
+### Blogs
 
 1. [Java Rust Interop](https://medium.com/@greptime/how-to-supercharge-your-java-project-with-rust-a-practical-guide-to-jni-integration-with-a-86f60e9708b8)
-
+2. [SQL Relational Algebra](https://dwhoman.com/blog/sql-relational-algebra)
+3. [SQL Transitive Closure](https://dwhoman.com/blog/sql-transitive-closure)
