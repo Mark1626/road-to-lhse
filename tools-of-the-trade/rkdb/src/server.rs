@@ -1,69 +1,75 @@
+use std::io::Error;
 use std::net::{Ipv4Addr, SocketAddrV4};
-use hyper::{
-    body::{Bytes, Incoming}, server::conn::http1, Method, Request, Response, StatusCode
-};
-use http_body_util::{BodyExt, Full};
-use hyper_util::rt::TokioIo;
-use tokio::net::TcpListener;
-use hyper::service::service_fn;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
+use tokio::io::{AsyncReadExt, AsyncWriteExt, BufReader};
+use tokio::net::{TcpListener, TcpStream};
+use tokio::sync::Mutex;
 
 use crate::cli;
 use crate::db::RKDBStore;
 
 type SharedDB = Arc<Mutex<RKDBStore>>;
 
-async fn handle_request_command(
-    req: Request<Incoming>,
-    db: SharedDB
-) -> Result<Response<Full<Bytes>>, hyper::Error> {
-    if req.method() != Method::POST {
-        return Ok(Response::builder()
-            .status(StatusCode::METHOD_NOT_ALLOWED)
-            .body(Full::new(Bytes::from("-ERR only POST allowed\r\n")))
-            .unwrap());
+async fn handle_connection(mut stream: TcpStream, db: SharedDB) -> Result<(), Error> {
+    let (reader, mut writer) = stream.split();
+    let mut reader = BufReader::new(reader);
+    let mut buffer = String::new();
+    let bytes_read = reader.read_to_string(&mut buffer).await?;
+    if bytes_read == 0 {
+        return Ok(());
+    }
+    println!("Request: {}", buffer);
+
+    let lines: Vec<&str> = buffer.split("\r\n").filter(|s| !s.is_empty()).collect();
+    if lines.is_empty() {
+        return Ok(writer.write_all("-ERR empty input\r\n".as_bytes()).await?);
     }
 
-    let body_bytes = req.collect().await?.to_bytes();
-    let body_str = String::from_utf8(body_bytes.to_vec()).unwrap_or_default();
-
-    let parts: Vec<&str> = body_str.split("\\r\\n").collect();
-    if parts.len() < 3 {
-        return Ok(Response::builder()
-            .status(StatusCode::BAD_REQUEST)
-            .body(Full::new(Bytes::from("-ERR invalid command format\r\n")))
-            .unwrap());
+    if !lines[0].starts_with('*') {
+        return Ok(writer
+            .write_all("-ERR invalid RESP format\r\n".as_bytes())
+            .await?);
     }
 
-    let command = parts[2].to_uppercase();
-    let args: Vec<&&str> = parts[4..].iter()
-        .step_by(2)
-        .filter(|s| !s.is_empty() && !s.starts_with('$'))
-        .collect();
-
-    let db_lock = db.lock().unwrap();
-    let response = match command.as_str() {
-        "SET" if args.len() >= 2 => {
-            match db_lock.set(args[0], args[1]) {
-                Ok(_) => "+OK\r\n".to_string(),
-                Err(e) => format!("-ERR DB error {}\r\n", e)
-            }
+    let array_size: usize = match lines[0][1..].parse() {
+        Ok(size) => size,
+        Err(_) => {
+            return Ok(writer
+                .write_all("-ERR invalid array size\r\n".as_bytes())
+                .await?);
         }
-        "GET" if !args.is_empty() => {
-            match db_lock.get(args[0]) {
-                Ok(Some(value)) => format!("${}\r\n{}\r\n", value.len(), value),
-                Ok(None) => "$-1\r\n".to_string(),
-                Err(e) => format!("-ERR DB error {}\r\n", e)
-            }
-        }
-        // Skipping the DEL command
-        // "DEL" if !args.is_empty() => {
-        //     "".to_string()
-        // }
-        _ => "-ERR unknown command or wrong number of arguments\r\n".to_string()
     };
 
-    Ok(Response::new(Full::new(Bytes::from(response))))
+    if array_size == 0 {
+        return Ok(writer
+            .write_all("-ERR empty command array\r\n".as_bytes())
+            .await?);
+    }
+
+    let command = lines[1].to_uppercase();
+    let args: Vec<&&str> = lines[2..]
+        .iter()
+        .filter(|l| !l.starts_with('$') && !l.starts_with('*'))
+        .collect();
+
+    let db_lock = db.lock().await;
+    let response = match command.as_str() {
+        "SET" if args.len() >= 2 => match db_lock.set(&args[0], &args[1]) {
+            Ok(_) => "+OK\r\n".to_string(),
+            Err(e) => format!("-ERR DB error {}\r\n", e),
+        },
+        "GET" if !args.is_empty() => match db_lock.get(&args[0]) {
+            Ok(Some(value)) => format!("${}\r\n{}\r\n", value.len(), value),
+            Ok(None) => "$-1\r\n".to_string(),
+            Err(e) => format!("-ERR DB error {}\r\n", e),
+        },
+        "PING" => "+PONG\r\n".to_string(),
+        "COMMAND" => "*2\r\n$3\r\nSET\r\n$3\r\nGET\r\n".to_string(),
+        _ => format!("-ERR unknown command '{}'\r\n", command),
+    };
+
+    println!("Sending response: {}", response.replace("\r\n", "\\r\\n"));
+    Ok(stream.write_all(response.as_bytes()).await?)
 }
 
 pub async fn start_server(args: cli::Args) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
@@ -79,16 +85,11 @@ pub async fn start_server(args: cli::Args) -> Result<(), Box<dyn std::error::Err
     println!("Starting server on {:?}", addr);
     loop {
         let (stream, _) = listener.accept().await?;
-        let io = TokioIo::new(stream);
         let db = db.clone();
 
         tokio::spawn(async move {
-            let svc = service_fn(move |req| {
-                println!("Req {:?}", req);
-                handle_request_command(req, db.clone())
-            });
-            if let Err(err) = http1::Builder::new().serve_connection(io, svc).await {
-                eprintln!("server error: {}", err);
+            if let Err(e) = handle_connection(stream, db).await {
+                eprintln!("Error handling request {}", e)
             }
         });
     }

@@ -48,19 +48,21 @@ impl RKDBStore {
 
     pub fn set(&self, key: &str, val: &str) -> Result<(), Error> {
         let mtime = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_secs() as i32;
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as i32;
 
         let etime = mtime + EXP_TIME;
 
         let mut stmt = self.conn.prepare(SQLSET)?;
-        let _ = stmt.bind(&[
+        let _ = stmt.bind(
+            &[
                 (":key", key),
                 (":value", val),
                 (":etime", &etime.to_string()),
                 (":mtime", &mtime.to_string()),
-            ][..]);
+            ][..],
+        );
         let _ = stmt.next();
         Ok(())
     }
@@ -71,13 +73,10 @@ impl RKDBStore {
             .unwrap()
             .as_secs() as i32;
 
-        let mut stmt= self.conn.prepare(SQLGET)?;
-        
-        stmt.bind(&[
-            (":key", key),
-            (":etime", &etime.to_string()),
-        ][..])?;
-        
+        let mut stmt = self.conn.prepare(SQLGET)?;
+
+        stmt.bind(&[(":key", key), (":etime", &etime.to_string())][..])?;
+
         let mut rows = Vec::new();
         while let Ok(State::Row) = stmt.next() {
             rows.push(stmt.read::<String, _>("value")?);

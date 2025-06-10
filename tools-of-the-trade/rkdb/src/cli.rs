@@ -10,7 +10,7 @@ pub struct Args {
     pub port: u16,
 
     #[arg(long)]
-    pub db_path: String
+    pub db_path: String,
 }
 
 pub fn parse_args() -> Args {

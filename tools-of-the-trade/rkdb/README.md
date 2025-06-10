@@ -1,6 +1,8 @@
 # RKDB
 
-A simple key-value store backed by sqlite in Rust ~~that supports REdis Serialization Protocol~~. **Created for learning purposes, this is not a full fledged key value store**
+A simple key-value store backed by sqlite in Rust that supports REdis Serialization Protocol. **Created for learning purposes, this is not a full fledged key value store**
+
+> Note: I'm still not able to use the redis cli directly
 
 ## Building
 
@@ -10,14 +12,14 @@ cargo build
 
 ## Running RKDB
 
-I made a big blunnder by making the server handle HTTP when it should rather handle TCP requests
-
 ```bash
 rkdb --host 127.0.0.1 --port 8080 --db-path ./rkdb.db
 
-curl -X POST localhost:8080 -H 'Content-Type: text/plain' --data '*3\r\n$3\r\nSET\r\n$4\r\nfoo2\r\n$3\r\nbar\r\n'
+echo "*1\r\n$4\r\nPING\r\n" | nc -v 127.0.0.1 8080
 
-curl -X POST localhost:8080 -H 'Content-Type: text/plain' --data '*2\r\n$3\r\nGET\r\n$4\r\nfoo2\r\n'
+echo "*3\r\n$3\r\nSET\r\n$4\r\nfoo5\r\n$3\r\nbar\r\n" | nc -v 127.0.0.1 8080
+
+echo "*2\r\n$3\r\nGET\r\n$4\r\nfoo5\r\n" | nc -v 127.0.0.1 8080 
 ```
 
 ## Acknowledgements
