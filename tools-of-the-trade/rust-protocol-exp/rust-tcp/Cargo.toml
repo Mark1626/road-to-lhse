@@ -1,0 +1,8 @@
+[package]
+name = "rust-tcp"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+hyper-util = { version = "0.1.14", features = ["full"] }
+tokio = { version = "1.45.1", features = ["full"] }
