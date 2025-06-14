@@ -9,7 +9,7 @@ and for [Hardware development](https://github.com/Mark1626/road-to-hardware-desi
 1. SQL Engines
     * tdigest sqlite extension
 2. Tools of the Trade
-    * Lucene Experiments
+    * Lucene Experiments (started doing this to get some hands-on in Java, to be revisited based on need)
     * ASM from Java
     * Notes on JMH (case studies to be added)
     * RKDB - Rust based KV store backed by sqlite
